@@ -76,6 +76,7 @@ public final class AddHttpApiKeyAuthPlugin implements TypeScriptIntegration {
                             .name("resolveHttpApiKeyAuthConfig")
                             .build())
                     .servicePredicate((m, s) -> hasEffectiveHttpApiKeyAuthTrait(m, s))
+                    .settingsPredicate((m, s, settings) -> !settings.getExperimentalIdentityAndAuth())
                     .build(),
 
             // Add the middleware to operations that use HTTP API key authorization.
@@ -96,21 +97,24 @@ public final class AddHttpApiKeyAuthPlugin implements TypeScriptIntegration {
                             .keySet()
                             .contains(HttpApiKeyAuthTrait.ID)
                             && !o.hasTrait(OptionalAuthTrait.class))
+                    .settingsPredicate((m, s, settings) -> !settings.getExperimentalIdentityAndAuth())
                     .build()
         );
     }
 
     @Override
     public void customize(TypeScriptCodegenContext codegenContext) {
-        TypeScriptSettings settings = codegenContext.settings();
-        Model model = codegenContext.model();
-        BiConsumer<String, Consumer<TypeScriptWriter>> writerFactory = codegenContext.writerDelegator()::useFileWriter;
+        if (!codegenContext.settings().getExperimentalIdentityAndAuth()) {
+            TypeScriptSettings settings = codegenContext.settings();
+            Model model = codegenContext.model();
+            BiConsumer<String, Consumer<TypeScriptWriter>> writerFactory = codegenContext.writerDelegator()::useFileWriter;
 
-        writeAdditionalFiles(settings, model, writerFactory);
+            writeAdditionalFiles(settings, model, writerFactory);
 
-        writerFactory.accept(Paths.get(CodegenUtils.SOURCE_FOLDER, "index.ts").toString(), writer -> {
-            writeAdditionalExports(settings, model, writer);
-        });
+            writerFactory.accept(Paths.get(CodegenUtils.SOURCE_FOLDER, "index.ts").toString(), writer -> {
+                writeAdditionalExports(settings, model, writer);
+            });
+        }
     }
 
     private void writeAdditionalFiles(

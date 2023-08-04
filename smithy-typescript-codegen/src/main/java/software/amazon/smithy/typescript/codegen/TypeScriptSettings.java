@@ -58,6 +58,7 @@ public final class TypeScriptSettings {
     private static final String PRIVATE = "private";
     private static final String PACKAGE_MANAGER = "packageManager";
     private static final String CREATE_DEFAULT_README = "createDefaultReadme";
+    private static final String EXPERIMENTAL_IDENTITY_AND_AUTH = "experimentalIdentityAndAuth";
 
     private String packageName;
     private String packageDescription = "";
@@ -74,6 +75,7 @@ public final class TypeScriptSettings {
         RequiredMemberMode.NULLABLE;
     private PackageManager packageManager = PackageManager.YARN;
     private boolean createDefaultReadme = false;
+    private boolean experimentalIdentityAndAuth = false;
 
     @Deprecated
     public static TypeScriptSettings from(Model model, ObjectNode config) {
@@ -107,6 +109,8 @@ public final class TypeScriptSettings {
         settings.setPrivate(config.getBooleanMember(PRIVATE).map(BooleanNode::getValue).orElse(false));
         settings.setCreateDefaultReadme(
                 config.getBooleanMember(CREATE_DEFAULT_README).map(BooleanNode::getValue).orElse(false));
+        settings.setExperimentalIdentityAndAuth(
+                config.getBooleanMemberOrDefault(EXPERIMENTAL_IDENTITY_AND_AUTH, false));
         settings.setPackageManager(
                 config.getStringMember(PACKAGE_MANAGER)
                     .map(s -> PackageManager.fromString(s.getValue()))
@@ -350,6 +354,31 @@ public final class TypeScriptSettings {
 
     public void setPackageManager(PackageManager packageManager) {
         this.packageManager = packageManager;
+    }
+
+    /**
+     * Returns whether to use experimental identity and auth.
+     *
+     * @return if experimental identity and auth should used. Default: false
+     */
+    public boolean getExperimentalIdentityAndAuth() {
+        return experimentalIdentityAndAuth;
+    }
+
+    /**
+     * Sets whether experimental identity and auth should be used.
+     *
+     * @param experimentalIdentityAndAuth whether experimental identity and auth should be used.
+     */
+    public void setExperimentalIdentityAndAuth(boolean experimentalIdentityAndAuth) {
+        if (experimentalIdentityAndAuth) {
+            LOGGER.warning("""
+                Experimental identity and auth is in development, and is subject to \
+                breaking changes. Behavior may NOT have the same feature parity as \
+                non-experimental behavior. This setting is also subject to removal \
+                when the feature is completed.""");
+        }
+        this.experimentalIdentityAndAuth = experimentalIdentityAndAuth;
     }
 
     /**
