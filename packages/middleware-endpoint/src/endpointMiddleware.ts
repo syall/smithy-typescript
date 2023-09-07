@@ -17,6 +17,33 @@ import { EndpointParameterInstructions } from "./types";
 /**
  * @internal
  */
+export interface EndpointMiddlewareHandlerExecutionContext
+  extends HandlerExecutionContext {
+  /**
+   * Resolved by the endpointMiddleware function of `@smithy/middleware-endpoint`
+   * in the serialization stage.
+   */
+  endpointV2?: EndpointV2;
+
+  /**
+   * Set at the same time as endpointV2.
+   */
+  authSchemes?: AuthScheme[];
+
+  /**
+   * Signing region resolved if {@link authSchemes} is defined.
+   */
+  signing_region?: string;
+
+  /**
+   * Signing service resolved if {@link authSchemes} is defined.
+   */
+  signing_service?: string;
+}
+
+/**
+ * @internal
+ */
 export const endpointMiddleware = <T extends EndpointParameters>({
   config,
   instructions,
@@ -26,7 +53,7 @@ export const endpointMiddleware = <T extends EndpointParameters>({
 }): SerializeMiddleware<any, any> => {
   return <Output extends MetadataBearer>(
     next: SerializeHandler<any, Output>,
-    context: HandlerExecutionContext
+    context: EndpointMiddlewareHandlerExecutionContext
   ): SerializeHandler<any, Output> => async (
     args: SerializeHandlerArguments<any>
   ): Promise<SerializeHandlerOutput<Output>> => {
@@ -46,8 +73,8 @@ export const endpointMiddleware = <T extends EndpointParameters>({
 
     const authScheme: AuthScheme | undefined = context.authSchemes?.[0];
     if (authScheme) {
-      context["signing_region"] = authScheme.signingRegion;
-      context["signing_service"] = authScheme.signingName;
+      context.signing_region = authScheme.signingRegion;
+      context.signing_service = authScheme.signingName;
     }
 
     return next({
