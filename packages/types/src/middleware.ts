@@ -495,6 +495,28 @@ export interface HandlerExecutionContext {
   logger?: Logger;
 
   /**
+   * Name of the service.
+   */
+  clientName?: string;
+
+  /**
+   * Name of the command.
+   */
+  commandName?: string;
+
+  /**
+   * Function that filters an input based on `@sensitive`
+   * @param input input to filter
+   */
+  inputFilterSensitiveLog?(input: any): any;
+
+  /**
+   * Function that filters an output based on `@sensitive`
+   * @param output output to filter
+   */
+  outputFilterSensitiveLog?(output: any): any;
+
+  /**
    * Additional user agent that inferred by middleware. It can be used to save
    * the internal user agent sections without overriding the `customUserAgent`
    * config in clients.
@@ -508,17 +530,20 @@ export interface HandlerExecutionContext {
   endpointV2?: EndpointV2;
 
   /**
+   * @deprecated
    * Set at the same time as endpointV2.
    */
   authSchemes?: AuthScheme[];
 
   /**
+   * @deprecated
    * The current auth configuration that has been set by any auth middleware and
    * that will prevent from being set more than once.
    */
   currentAuthConfig?: HttpAuthDefinition;
 
   /**
+   * @deprecated
    * Used by DynamoDbDocumentClient.
    */
   dynamoDbDocumentClientOptions?: Partial<{
@@ -526,8 +551,15 @@ export interface HandlerExecutionContext {
     overrideOutputFilterSensitiveLog(...args: any[]): string | void;
   }>;
 
+  [SDK_INTERNAL]?: Record<string, unknown>;
+
   [key: string]: any;
 }
+
+/**
+ * @internal
+ */
+export const SDK_INTERNAL = "SDK_INTERNAL";
 
 /**
  * @public
