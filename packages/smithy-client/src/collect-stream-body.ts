@@ -8,7 +8,7 @@ import { Uint8ArrayBlobAdapter } from "@smithy/util-stream";
  */
 export const collectBody = async (
   streamBody: any = new Uint8Array(),
-  context: {
+  config: {
     streamCollector: SerdeContext["streamCollector"];
   }
 ): Promise<Uint8ArrayBlobAdapter> => {
@@ -20,7 +20,7 @@ export const collectBody = async (
     return Uint8ArrayBlobAdapter.mutate(new Uint8Array());
   }
 
-  const fromContext = context.streamCollector(streamBody);
+  const fromConfig = config.streamCollector(streamBody);
 
-  return Uint8ArrayBlobAdapter.mutate(await fromContext);
+  return Uint8ArrayBlobAdapter.mutate(await fromConfig);
 };
