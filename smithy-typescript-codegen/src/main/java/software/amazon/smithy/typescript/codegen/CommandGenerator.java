@@ -359,7 +359,7 @@ final class CommandGenerator implements Runnable {
                             () -> writer.writeInline("(_: any) => _"));
                 });
                 writer.openBlock("[SMITHY_CONTEXT_KEY]: {", "},", () -> {
-                    writer.write("service: $S,", service.toShapeId().getName());
+                    writer.write("service: $S,", CodegenUtils.getServiceName(settings, model, symbolProvider));
                     writer.write("operation: $S,", operation.toShapeId().getName());
                 });
             });
