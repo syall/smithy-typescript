@@ -22,13 +22,13 @@ export const endpointMiddlewareOptions: SerializeHandlerOptions & RelativeMiddle
  */
 export const getEndpointPlugin = <T extends EndpointParameters>(
   config: EndpointResolvedConfig<T>,
-  instructions: EndpointParameterInstructions
+  instructions: EndpointParameterInstructions | { endpointParameterInstructions: EndpointParameterInstructions}
 ): Pluggable<any, any> => ({
   applyToStack: (clientStack) => {
     clientStack.addRelativeTo(
       endpointMiddleware<T>({
         config,
-        instructions,
+        instructions: (instructions?.endpointParameterInstructions ?? instructions) as EndpointParameterInstructions,
       }),
       endpointMiddlewareOptions
     );

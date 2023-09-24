@@ -18,9 +18,9 @@ export const httpSigningMiddlewareOptions: FinalizeRequestHandlerOptions & Relat
 /**
  * @internal
  */
-export const getHttpSigningPlugin = <Input extends object, Output extends object>(
-  config: object
-): Pluggable<Input, Output> => ({
+export const getHttpSigningPlugin = <T>(
+  config: T
+): Pluggable<any, any> => ({
   applyToStack: (clientStack) => {
     clientStack.addRelativeTo(httpSigningMiddleware(config), httpSigningMiddlewareOptions);
   },

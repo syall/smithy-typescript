@@ -27,8 +27,8 @@ import software.amazon.smithy.model.shapes.OperationShape;
 import software.amazon.smithy.model.shapes.ServiceShape;
 import software.amazon.smithy.model.traits.DocumentationTrait;
 import software.amazon.smithy.model.traits.PaginatedTrait;
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait;
 import software.amazon.smithy.typescript.codegen.integration.ProtocolGenerator;
+import software.amazon.smithy.typescript.codegen.sections.IndexClientExportsCodeSection;
 import software.amazon.smithy.utils.SmithyInternalApi;
 import software.amazon.smithy.waiters.WaitableTrait;
 
@@ -99,17 +99,16 @@ final class IndexGenerator {
         ServiceShape service = settings.getService(model);
         Symbol symbol = symbolProvider.toSymbol(service);
 
+        writer.pushState(IndexClientExportsCodeSection.builder()
+            .service(service)
+            .build());
+
         // Write export statement for bare-bones client.
         writer.write("export * from \"./$L\";", symbol.getName());
 
         // Write export statement for aggregated client.
         String aggregatedClientName = symbol.getName().replace("Client", "");
         writer.write("export * from \"./$L\";", aggregatedClientName);
-
-        // export endpoints config interface
-        if (service.hasTrait(EndpointRuleSetTrait.class)) {
-            writer.write("export { ClientInputEndpointParameters } from \"./endpoint/EndpointParameters\";");
-        }
 
         // Write export statement for commands.
         writer.write("export * from \"./commands\";");
@@ -127,5 +126,7 @@ final class IndexGenerator {
         if (operations.stream().anyMatch(operation -> operation.hasTrait(WaitableTrait.ID))) {
             writer.write("export * from \"./waiters\";");
         }
+
+        writer.popState();
     }
 }

@@ -28,8 +28,8 @@ interface HttpSigningMiddlewareHandlerExecutionContext extends HandlerExecutionC
 /**
  * @internal
  */
-export const httpSigningMiddleware = <Input extends object, Output extends object>(
-  config: object
+export const httpSigningMiddleware = <T, Input extends object, Output extends object>(
+  config: T
 ): FinalizeRequestMiddleware<Input, Output> => (
   next: FinalizeHandler<Input, Output>,
   context: HttpSigningMiddlewareHandlerExecutionContext

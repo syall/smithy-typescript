@@ -758,7 +758,7 @@ public abstract class HttpBindingProtocolGenerator implements ProtocolGenerator 
         final boolean useEndpointsV2 = context.getService().hasTrait(EndpointRuleSetTrait.class);
         final Map<String, String> contextParams = useEndpointsV2
             ? new RuleSetParameterFinder(context.getService())
-                .getContextParams(context.getModel().getShape(operation.getInputShape()).get())
+                .getContextParams(context.getModel().expectShape(operation.getInputShape()))
             : Collections.emptyMap();
 
         // Always write the bound path, but only the actual segments.

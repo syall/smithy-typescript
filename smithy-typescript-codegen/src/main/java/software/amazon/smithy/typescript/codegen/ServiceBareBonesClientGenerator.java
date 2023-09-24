@@ -31,8 +31,6 @@ import software.amazon.smithy.model.Model;
 import software.amazon.smithy.model.knowledge.TopDownIndex;
 import software.amazon.smithy.model.shapes.OperationShape;
 import software.amazon.smithy.model.shapes.ServiceShape;
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait;
-import software.amazon.smithy.typescript.codegen.endpointsV2.EndpointsV2Generator;
 import software.amazon.smithy.typescript.codegen.integration.RuntimeClientPlugin;
 import software.amazon.smithy.typescript.codegen.integration.TypeScriptIntegration;
 import software.amazon.smithy.utils.OptionalUtils;
@@ -181,17 +179,7 @@ final class ServiceBareBonesClientGenerator implements Runnable {
         if (!inputTypes.isEmpty()) {
             writer.indent();
             for (SymbolReference symbolReference : inputTypes) {
-                if (service.hasTrait(EndpointRuleSetTrait.class)
-                    && symbolReference.getAlias().equals("EndpointInputConfig")) {
-                    writer.write("& $T<$L>", symbolReference, "EndpointParameters");
-                } else {
-                    writer.write("& $T", symbolReference);
-                }
-            }
-            if (service.hasTrait(EndpointRuleSetTrait.class)) {
-                writer.addImport("ClientInputEndpointParameters", null,
-                    EndpointsV2Generator.ENDPOINT_PARAMETERS_DEPENDENCY);
-                writer.write("& ClientInputEndpointParameters");
+                writer.write("& $T", symbolReference);
             }
             writer.dedent();
         }
@@ -214,18 +202,8 @@ final class ServiceBareBonesClientGenerator implements Runnable {
             runtimePlugins.stream()
                     .flatMap(p -> OptionalUtils.stream(p.getResolvedConfig()))
                     .forEach(symbol -> {
-                        if (service.hasTrait(EndpointRuleSetTrait.class)
-                            && symbol.getAlias().equals("EndpointResolvedConfig")) {
-                            writer.write("& $T<$L>", symbol, "EndpointParameters");
-                        } else {
-                            writer.write("& $T", symbol);
-                        }
+                        writer.write("& $T", symbol);
                     });
-            if (service.hasTrait(EndpointRuleSetTrait.class)) {
-                writer.addImport("ClientResolvedEndpointParameters", null,
-                    EndpointsV2Generator.ENDPOINT_PARAMETERS_DEPENDENCY);
-                writer.write("& ClientResolvedEndpointParameters");
-            }
             writer.dedent();
         }
 
@@ -351,16 +329,6 @@ final class ServiceBareBonesClientGenerator implements Runnable {
             writer.write("let $L = __getRuntimeConfig(configuration || {});",
                     generateConfigVariable(configVariable));
 
-            if (service.hasTrait(EndpointRuleSetTrait.class)) {
-                configVariable++;
-                writer.addImport("resolveClientEndpointParameters", null,
-                    EndpointsV2Generator.ENDPOINT_PARAMETERS_DEPENDENCY);
-                writer.write("let $L = $L($L);",
-                    generateConfigVariable(configVariable),
-                    "resolveClientEndpointParameters",
-                    generateConfigVariable(configVariable - 1));
-            }
-
             // Add runtime plugin "resolve" method calls. These are invoked one
             // after the other until all of the runtime plugins have been called.
             // Only plugins that have configuration are called. Each time the
@@ -369,8 +337,8 @@ final class ServiceBareBonesClientGenerator implements Runnable {
             for (RuntimeClientPlugin plugin : runtimePlugins) {
                 if (plugin.getResolveFunction().isPresent()) {
                     configVariable++;
-                    Map<String, Object> paramsMap = plugin.getAdditionalResolveFunctionParameters(
-                            model, service, null);
+                    Map<String, Object> paramsMap = plugin.getAdditionalResolveFunctionSymbolParameters(
+                            model, service, null, symbolProvider);
                     List<String> additionalParameters = CodegenUtils.getFunctionParametersList(paramsMap);
 
                     String additionalParamsString = additionalParameters.isEmpty()

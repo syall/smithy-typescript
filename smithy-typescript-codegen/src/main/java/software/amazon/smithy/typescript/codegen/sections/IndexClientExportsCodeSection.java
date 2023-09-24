@@ -5,50 +5,37 @@
 
 package software.amazon.smithy.typescript.codegen.sections;
 
-import software.amazon.smithy.model.shapes.OperationShape;
 import software.amazon.smithy.model.shapes.ServiceShape;
 import software.amazon.smithy.utils.CodeSection;
 import software.amazon.smithy.utils.SmithyBuilder;
 import software.amazon.smithy.utils.SmithyUnstableApi;
 
 @SmithyUnstableApi
-public class SmithyContextCodeSection implements CodeSection {
+public class IndexClientExportsCodeSection implements CodeSection {
     private final ServiceShape service;
-    private final OperationShape operation;
 
-    private SmithyContextCodeSection(Builder builder) {
+    private IndexClientExportsCodeSection(Builder builder) {
         service = SmithyBuilder.requiredState("service", builder.service);
-        operation = SmithyBuilder.requiredState("operation", builder.operation);
     }
 
     public ServiceShape getService() {
         return service;
     }
 
-    public OperationShape getOperation() {
-        return operation;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
 
-    public static class Builder implements SmithyBuilder<SmithyContextCodeSection> {
+    public static class Builder implements SmithyBuilder<IndexClientExportsCodeSection> {
         private ServiceShape service;
-        private OperationShape operation;
 
         @Override
-        public SmithyContextCodeSection build() {
-            return new SmithyContextCodeSection(this);
+        public IndexClientExportsCodeSection build() {
+            return new IndexClientExportsCodeSection(this);
         }
 
         public Builder service(ServiceShape service) {
             this.service = service;
-            return this;
-        }
-
-        public Builder operation(OperationShape operation) {
-            this.operation = operation;
             return this;
         }
     }

@@ -12,11 +12,18 @@ import software.amazon.smithy.utils.SmithyBuilder;
 import software.amazon.smithy.utils.SmithyUnstableApi;
 
 @SmithyUnstableApi
-public class SmithyContextCodeSection implements CodeSection {
+public class CommandPropertiesCodeSection implements CodeSection {
+    public static final String COMMAND_PROPERTIES_SECTION = "command_properties";
+
     private final ServiceShape service;
     private final OperationShape operation;
 
-    private SmithyContextCodeSection(Builder builder) {
+    @Override
+    public String sectionName() {
+        return "command_properties";
+    }
+
+    private CommandPropertiesCodeSection(Builder builder) {
         service = SmithyBuilder.requiredState("service", builder.service);
         operation = SmithyBuilder.requiredState("operation", builder.operation);
     }
@@ -33,13 +40,13 @@ public class SmithyContextCodeSection implements CodeSection {
         return new Builder();
     }
 
-    public static class Builder implements SmithyBuilder<SmithyContextCodeSection> {
+    public static class Builder implements SmithyBuilder<CommandPropertiesCodeSection> {
         private ServiceShape service;
         private OperationShape operation;
 
         @Override
-        public SmithyContextCodeSection build() {
-            return new SmithyContextCodeSection(this);
+        public CommandPropertiesCodeSection build() {
+            return new CommandPropertiesCodeSection(this);
         }
 
         public Builder service(ServiceShape service) {

@@ -18,12 +18,9 @@ export const httpAuthSchemeMiddlewareOptions: SerializeHandlerOptions & Relative
 /**
  * @internal
  */
-export const getHttpAuthSchemePlugin = <
-  Input extends Record<string, unknown> = Record<string, unknown>,
-  Output extends MetadataBearer = MetadataBearer
->(
-  config: PreviouslyResolved
-): Pluggable<Input, Output> => ({
+export const getHttpAuthSchemePlugin = <T>(
+  config: T & PreviouslyResolved
+): Pluggable<any, any> => ({
   applyToStack: (clientStack) => {
     clientStack.addRelativeTo(httpAuthSchemeMiddleware(config), httpAuthSchemeMiddlewareOptions);
   },
