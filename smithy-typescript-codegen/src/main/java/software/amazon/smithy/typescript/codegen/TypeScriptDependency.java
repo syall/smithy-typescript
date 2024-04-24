@@ -15,18 +15,10 @@
 
 package software.amazon.smithy.typescript.codegen;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 import software.amazon.smithy.codegen.core.Symbol;
 import software.amazon.smithy.codegen.core.SymbolDependency;
@@ -157,7 +149,9 @@ public enum TypeScriptDependency implements Dependency {
         }
 
         if (name.startsWith("@smithy/")) {
-            version = "^" + version;
+            if (!version.equals("latest")) {
+                version = "^" + version;
+            }
         }
         this.dependency = SymbolDependency.builder()
                 .dependencyType(type)
@@ -239,34 +233,7 @@ public enum TypeScriptDependency implements Dependency {
         private static final Logger LOGGER = Logger.getLogger(SdkVersion.class.getName());
         private static final String PROPERTIES_PATH =
                 "/software/amazon/smithy/aws/typescript/codegen/sdkVersions.properties";
-        private static final Map<String, String> VERSIONS;
-
-        static {
-            Map<String, String> tmpVersions;
-            try {
-                URL versionsUrl = SdkVersion.class.getResource(PROPERTIES_PATH);
-                if (versionsUrl == null) {
-                    throw new IOException();
-                }
-                Properties p = new Properties();
-                try (Reader r =
-                        new BufferedReader(new InputStreamReader(versionsUrl.openStream(), StandardCharsets.UTF_8))) {
-                    p.load(r);
-                }
-                final Map<String, String> versions = new HashMap<>(p.size());
-                p.forEach((k, v) -> {
-                    if (versions.put(k.toString(), v.toString()) != null) {
-                        throw new IllegalArgumentException(String.format("Multiple versions defined for %s", k));
-                    }
-                });
-                tmpVersions = Collections.unmodifiableMap(versions);
-            } catch (IOException e) {
-                LOGGER.info("Could not read AWS dependency versions from smithy-aws-typescript-codegen, "
-                        + "will use 'latest' for AWS dependencies");
-                tmpVersions = Collections.emptyMap();
-            }
-            VERSIONS = tmpVersions;
-        }
+        private static final Map<String, String> VERSIONS = Collections.emptyMap();
 
         private static String getVersion(String packageName) {
             return VERSIONS.getOrDefault(packageName, "latest");
@@ -278,36 +245,10 @@ public enum TypeScriptDependency implements Dependency {
      */
     private static final class DependencyVersion {
         private static final Logger LOGGER = Logger.getLogger(DependencyVersion.class.getName());
-        private static final Map<String, String> VERSIONS;
-
-        static {
-            Map<String, String> tmpVersions;
-            try {
-                URL versionsUrl = DependencyVersion.class.getResource("dependencyVersions.properties");
-                if (versionsUrl == null) {
-                    throw new IOException();
-                }
-                Properties p = new Properties();
-                try (Reader r =
-                        new BufferedReader(new InputStreamReader(versionsUrl.openStream(), StandardCharsets.UTF_8))) {
-                    p.load(r);
-                }
-                final Map<String, String> versions = new HashMap<>(p.size());
-                p.forEach((k, v) -> {
-                    if (versions.put(k.toString(), v.toString()) != null) {
-                        throw new IllegalArgumentException(String.format("Multiple versions defined for %s", k));
-                    }
-                });
-                tmpVersions = Collections.unmodifiableMap(versions);
-            } catch (IOException e) {
-                LOGGER.info("Could not read dependency versions from smithy-typescript-codegen");
-                tmpVersions = Collections.emptyMap();
-            }
-            VERSIONS = tmpVersions;
-        }
+        private static final Map<String, String> VERSIONS = Collections.emptyMap();
 
         private static String getVersion(String packageName) {
-            return VERSIONS.get(packageName);
+            return VERSIONS.getOrDefault(packageName, "latest");
         }
     }
 }
